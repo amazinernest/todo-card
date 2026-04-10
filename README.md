@@ -1,80 +1,53 @@
-# Todo Card
+# todo-card
 
-A clean, accessible, and testable Todo/Task Card component built with plain HTML, CSS, and JavaScript.
+A single todo card component — plain HTML, CSS, and JS. No frameworks, no build step.
 
-## Preview
+Built for the HNG frontend task. Focuses on semantic markup, accessibility, and test automation hooks.
 
-![Todo Card](https://github.com/amazinernest/todo-card/raw/main/preview.png)
+## Usage
 
-## Features
-
-- ✅ All required `data-testid` attributes for test automation
-- ♿ Accessible — WCAG AA contrast, `aria-live`, keyboard navigable
-- ⏳ Live time-remaining counter (updates every 30 seconds)
-- 📱 Responsive from 320px to 1200px
-- 🎨 Clean light-mode design — no frameworks, no dependencies
-
-## Tech Stack
-
-| Layer | Choice |
-|-------|--------|
-| Markup | Semantic HTML5 |
-| Styling | Vanilla CSS (custom properties) |
-| Logic | Vanilla JavaScript (IIFE, no build step) |
-| Font | [Inter](https://fonts.google.com/specimen/Inter) via Google Fonts |
-
-## Getting Started
-
-No build step required. Just open the file in your browser:
-
-```bash
-# Clone the repo
-git clone https://github.com/amazinernest/todo-card.git
-cd todo-card
-
-# Open directly
-open index.html
-```
-
-Or serve it locally:
+Clone and open `index.html` directly in a browser, or serve it locally:
 
 ```bash
 npx serve .
 ```
 
-## File Structure
+That's it.
+
+## Structure
 
 ```
-todo-card/
-├── index.html   # Semantic HTML structure & data-testid attributes
-├── style.css    # Design system & responsive layout
-└── app.js       # Time-remaining logic, checkbox state, button handlers
+index.html   — markup and data-testid attributes
+style.css    — design tokens, layout, responsive styles
+app.js       — time-remaining counter, checkbox logic, button handlers
 ```
 
-## data-testid Reference
+## Test hooks
 
-| Element | `data-testid` |
-|---------|--------------|
-| Root card | `test-todo-card` |
-| Title | `test-todo-title` |
-| Description | `test-todo-description` |
-| Priority badge | `test-todo-priority` |
-| Due date | `test-todo-due-date` |
-| Time remaining | `test-todo-time-remaining` |
-| Status badge | `test-todo-status` |
-| Checkbox | `test-todo-complete-toggle` |
-| Tags container | `test-todo-tags` |
-| Work tag | `test-todo-tag-work` |
-| Urgent tag | `test-todo-tag-urgent` |
-| Edit button | `test-todo-edit-button` |
-| Delete button | `test-todo-delete-button` |
+All interactive elements expose `data-testid` attributes:
 
-## Behaviour
+```
+test-todo-card
+test-todo-title
+test-todo-description
+test-todo-priority
+test-todo-due-date
+test-todo-time-remaining
+test-todo-status
+test-todo-complete-toggle
+test-todo-tags
+test-todo-tag-work
+test-todo-tag-urgent
+test-todo-edit-button
+test-todo-delete-button
+```
 
-- **Checkbox** — toggles task completion; strikes through the title and updates the status badge to "Done"
-- **Time remaining** — calculates the gap between `Date.now()` and the fixed due date (Mar 1, 2026 · 18:00 UTC); refreshes every 30 s
-- **Edit** — logs `"edit clicked"` to the console
-- **Delete** — triggers a browser `alert`
+## Notes
+
+- Due date is hardcoded to `2026-03-01T18:00:00Z`. The time-remaining display recalculates every 30 seconds.
+- Checking the box strikes through the title and flips the status badge to "Done".
+- Edit logs to the console, delete triggers an alert.
+- Tested at 320px, 768px, and 1200px.
 
 ## License
 
