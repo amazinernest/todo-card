@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="A modern, accessible, and testable Todo Task Card component."
+      content="A modern, accessible, and testable Todo Task Card — Stage 1 with editing, status transitions, expand/collapse, and overdue indicators."
     />
-    <title>Todo Task Card</title>
+    <title>Todo Task Card · Stage 1</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -18,7 +18,7 @@
   </head>
   <body>
     <main id="main-content">
-      <h1 class="sr-only">Todo Task Card Demo</h1>
+      <h1 class="sr-only">Todo Task Card Demo — Stage 1</h1>
 
       <div class="page-wrapper">
         <article
@@ -27,7 +27,14 @@
           aria-labelledby="todo-title"
         >
 
-          <!-- ── Card body ────────────────────────────────── -->
+          <!-- ── Priority indicator accent bar ──────────────────── -->
+          <div
+            class="priority-indicator"
+            data-testid="test-todo-priority-indicator"
+            aria-hidden="true"
+          ></div>
+
+          <!-- ── Card body ────────────────────────────────────── -->
           <div class="card-body">
 
             <!-- Header: checkbox + title -->
@@ -45,7 +52,6 @@
                   />
                   <label for="todo-complete" class="checkbox-label" aria-hidden="true">
                     <span class="checkmark">
-                      <!-- Checkmark icon -->
                       <svg width="11" height="9" viewBox="0 0 11 9" fill="none" aria-hidden="true">
                         <path d="M1 4.5L4 7.5L10 1" stroke="white" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
                       </svg>
@@ -63,12 +69,13 @@
                 </h2>
               </div>
 
-              <!-- Priority + Status -->
+              <!-- Priority + Status row -->
               <div class="meta-row" role="group" aria-label="Task metadata">
                 <span
                   class="badge badge--high"
                   data-testid="test-todo-priority"
                   aria-label="Priority: High"
+                  id="priority-badge"
                 >
                   <span class="badge-dot" style="background:#f87171" aria-hidden="true"></span>
                   High priority
@@ -76,25 +83,66 @@
 
                 <span class="meta-sep" aria-hidden="true"></span>
 
+                <!-- Status control — dropdown replaces static badge -->
+                <div class="status-control-wrapper">
+                  <label for="status-select" class="sr-only">Task status</label>
+                  <select
+                    id="status-select"
+                    class="status-select badge badge--inprogress"
+                    data-testid="test-todo-status-control"
+                    aria-label="Change task status"
+                  >
+                    <option value="Pending">Pending</option>
+                    <option value="In Progress" selected>In Progress</option>
+                    <option value="Done">Done</option>
+                  </select>
+                </div>
+
+                <!-- Read-only status display (kept for testid compatibility) -->
                 <span
-                  class="badge badge--inprogress"
+                  class="badge badge--inprogress status-display"
                   data-testid="test-todo-status"
                   aria-label="Status: In Progress"
+                  aria-hidden="true"
                   id="status-badge"
                 >
                   <span class="badge-dot" style="background:#60a5fa" aria-hidden="true"></span>
-                  In progress
+                  In Progress
                 </span>
               </div>
             </header>
 
-            <!-- Description -->
-            <p
-              class="todo-description"
-              data-testid="test-todo-description"
-            >
-              Create wireframes and high-fidelity mockups for the product landing page, covering mobile, tablet, and desktop breakpoints. Share with the dev team for hand-off.
-            </p>
+            <!-- Description + Expand/Collapse -->
+            <div class="description-wrapper">
+              <!-- Collapsible container -->
+              <div
+                id="collapsible-description"
+                class="todo-collapsible"
+                data-testid="test-todo-collapsible-section"
+              >
+                <p
+                  class="todo-description"
+                  data-testid="test-todo-description"
+                >
+                  Create wireframes and high-fidelity mockups for the product landing page, covering mobile, tablet, and desktop breakpoints. Share with the dev team for hand-off. Include component specifications, spacing guidelines, and colour tokens to ensure pixel-perfect implementation. Coordinate with the copy team for final text content before the design is frozen.
+                </p>
+              </div>
+
+              <!-- Expand/collapse toggle button -->
+              <button
+                type="button"
+                id="expand-toggle"
+                class="expand-toggle"
+                data-testid="test-todo-expand-toggle"
+                aria-expanded="false"
+                aria-controls="collapsible-description"
+              >
+                <span class="expand-toggle-text">Show more</span>
+                <svg class="expand-icon" aria-hidden="true" viewBox="0 0 16 16" fill="none">
+                  <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
 
             <!-- Due date & time remaining -->
             <div
@@ -107,12 +155,30 @@
                   <path d="M5 1.5V4M11 1.5V4M1.5 6.5H14.5" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/>
                 </svg>
                 <time
-                  datetime="2026-03-01T18:00:00Z"
+                  id="due-date-display"
                   class="due-date"
                   data-testid="test-todo-due-date"
+                  datetime="2026-04-16T18:00:00+01:00"
                 >
-                  Mar 1, 2026 · 18:00 UTC
+                  Apr 16, 2026 · 18:00
                 </time>
+              </div>
+
+              <!-- Overdue indicator (separate element) -->
+              <div
+                id="overdue-indicator"
+                class="overdue-indicator"
+                data-testid="test-todo-overdue-indicator"
+                role="status"
+                aria-live="polite"
+                aria-atomic="true"
+                hidden
+              >
+                <svg class="overdue-icon" aria-hidden="true" viewBox="0 0 16 16" fill="none">
+                  <path d="M8 2.5L14.5 13.5H1.5L8 2.5Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/>
+                  <path d="M8 6.5V9.5M8 11V11.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                Overdue
               </div>
 
               <div
@@ -146,8 +212,92 @@
 
           </div><!-- /card-body -->
 
-          <!-- ── Card footer ──────────────────────────────── -->
-          <footer class="card-footer">
+          <!-- ── Edit form (hidden until edit mode) ────────────── -->
+          <div
+            id="edit-form-container"
+            class="edit-form-container"
+            data-testid="test-todo-edit-form"
+            hidden
+            aria-label="Edit task"
+            role="form"
+          >
+            <div class="edit-form-grid">
+
+              <div class="form-field">
+                <label for="edit-title-input" class="form-label">Title</label>
+                <input
+                  type="text"
+                  id="edit-title-input"
+                  class="form-input"
+                  data-testid="test-todo-edit-title-input"
+                  placeholder="Task title"
+                  autocomplete="off"
+                />
+              </div>
+
+              <div class="form-field">
+                <label for="edit-description-input" class="form-label">Description</label>
+                <textarea
+                  id="edit-description-input"
+                  class="form-textarea"
+                  data-testid="test-todo-edit-description-input"
+                  rows="3"
+                  placeholder="Task description"
+                ></textarea>
+              </div>
+
+              <div class="form-row">
+                <div class="form-field">
+                  <label for="edit-priority-select" class="form-label">Priority</label>
+                  <select
+                    id="edit-priority-select"
+                    class="form-select"
+                    data-testid="test-todo-edit-priority-select"
+                  >
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High" selected>High</option>
+                  </select>
+                </div>
+
+                <div class="form-field">
+                  <label for="edit-due-date-input" class="form-label">Due date</label>
+                  <input
+                    type="datetime-local"
+                    id="edit-due-date-input"
+                    class="form-input"
+                    data-testid="test-todo-edit-due-date-input"
+                  />
+                </div>
+              </div>
+
+              <div class="edit-form-actions">
+                <button
+                  type="button"
+                  id="save-btn"
+                  class="btn btn--save"
+                  data-testid="test-todo-save-button"
+                >
+                  <svg class="btn-icon" aria-hidden="true" viewBox="0 0 16 16" fill="none">
+                    <path d="M2.5 8.5L6 12L13.5 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  Save changes
+                </button>
+                <button
+                  type="button"
+                  id="cancel-btn"
+                  class="btn btn--cancel"
+                  data-testid="test-todo-cancel-button"
+                >
+                  Cancel
+                </button>
+              </div>
+
+            </div>
+          </div><!-- /edit-form-container -->
+
+          <!-- ── Card footer ──────────────────────────────────── -->
+          <footer class="card-footer" id="card-footer">
             <button
               type="button"
               class="btn btn--edit"

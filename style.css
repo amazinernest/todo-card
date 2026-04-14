@@ -1,4 +1,9 @@
 /* =============================================
+   HIDDEN ATTRIBUTE — ensure CSS display doesn't override
+   ============================================= */
+[hidden] { display: none !important; }
+
+/* =============================================
    DESIGN TOKENS
    ============================================= */
 :root {
@@ -14,11 +19,12 @@
   --ink-900: #1a1917;
   --ink-700: #3d3c3a;
   --ink-500: #6b6966;
+  --ink-400: #9b9895;
   --ink-300: #b5b3af;
   --ink-100: #e8e6e2;
   --ink-50:  #f0ede9;
 
-  /* Single accent — rich teal-slate */
+  /* Single accent — rich blue */
   --accent:       #2563eb;
   --accent-light: #eff6ff;
   --accent-muted: #dbeafe;
@@ -27,20 +33,28 @@
   --p-high-ink:    #b91c1c;
   --p-high-fill:   #fef2f2;
   --p-high-border: #fecaca;
+  --p-high-dot:    #f87171;
 
   --p-medium-ink:    #b45309;
   --p-medium-fill:   #fffbeb;
   --p-medium-border: #fde68a;
+  --p-medium-dot:    #fbbf24;
 
   --p-low-ink:    #15803d;
   --p-low-fill:   #f0fdf4;
   --p-low-border: #bbf7d0;
+  --p-low-dot:    #4ade80;
 
   /* Status */
-  --s-inprogress-ink:    #1d4ed8;
-  --s-inprogress-fill:   #eff6ff;
+  --s-pending-ink:     #78716c;
+  --s-pending-fill:    #f5f5f4;
+  --s-pending-border:  #e7e5e4;
+  --s-inprogress-ink:  #1d4ed8;
+  --s-inprogress-fill: #eff6ff;
+  --s-inprogress-border: #bfdbfe;
   --s-done-ink:    #166534;
   --s-done-fill:   #f0fdf4;
+  --s-done-border: #bbf7d0;
 
   /* Tags */
   --tag-work-ink:    #6d28d9;
@@ -54,17 +68,22 @@
   --shadow-card: 0 1px 3px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.08);
   --shadow-card-hover: 0 2px 6px rgba(0,0,0,.07), 0 8px 24px rgba(0,0,0,.11);
   --shadow-btn:  0 1px 2px rgba(0,0,0,.05);
+  --shadow-input: 0 0 0 3px rgba(37,99,235,.15);
 
   /* Shape */
   --radius-card: 14px;
   --radius-badge: 5px;
   --radius-tag: 4px;
   --radius-btn: 8px;
-  --radius-input: 7px;
+  --radius-input: 8px;
 
   /* Motion */
   --t-fast: 120ms ease;
   --t-mid:  200ms ease;
+  --t-slow: 300ms ease;
+
+  /* Priority indicator bar width */
+  --priority-bar-width: 4px;
 }
 
 /* =============================================
@@ -113,7 +132,7 @@ body {
    ============================================= */
 .page-wrapper {
   width: 100%;
-  max-width: 440px;
+  max-width: 480px;
 }
 
 /* =============================================
@@ -126,6 +145,7 @@ body {
   box-shadow: var(--shadow-card);
   transition: box-shadow var(--t-mid), border-color var(--t-mid);
   overflow: hidden;
+  position: relative;
 }
 
 .todo-card:hover {
@@ -133,11 +153,50 @@ body {
   border-color: var(--ink-300);
 }
 
+/* ---- Done state ---- */
+.todo-card.is-done {
+  opacity: 0.85;
+}
+
+.todo-card.is-done .todo-title {
+  text-decoration: line-through;
+  text-decoration-color: var(--ink-300);
+  color: var(--ink-500);
+}
+
+.todo-card.is-done .todo-description {
+  color: var(--ink-300);
+}
+
+/* ---- Overdue state ---- */
+.todo-card.is-overdue:not(.is-done) {
+  border-color: var(--p-high-border);
+}
+
+/* =============================================
+   PRIORITY INDICATOR BAR (left accent)
+   ============================================= */
+.priority-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: var(--priority-bar-width);
+  border-radius: var(--radius-card) 0 0 var(--radius-card);
+  transition: background var(--t-mid);
+  z-index: 1;
+}
+
+/* This class is applied via JS */
+.priority-indicator.pri-high   { background: var(--p-high-dot); }
+.priority-indicator.pri-medium { background: var(--p-medium-dot); }
+.priority-indicator.pri-low    { background: var(--p-low-dot); }
+
 /* =============================================
    CARD BODY (all content except footer)
    ============================================= */
 .card-body {
-  padding: 1.5rem 1.5rem 1.25rem;
+  padding: 1.5rem 1.5rem 1.25rem calc(1.5rem + var(--priority-bar-width));
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -241,17 +300,6 @@ body {
   text-decoration: none;
 }
 
-/* Done state */
-.todo-card.is-done .todo-title {
-  text-decoration: line-through;
-  text-decoration-color: var(--ink-300);
-  color: var(--ink-500);
-}
-
-.todo-card.is-done .todo-description {
-  color: var(--ink-300);
-}
-
 /* =============================================
    META ROW (priority + status)
    ============================================= */
@@ -284,7 +332,7 @@ body {
   flex-shrink: 0;
 }
 
-/* Priority */
+/* Priority badges */
 .badge--high {
   background: var(--p-high-fill);
   color: var(--p-high-ink);
@@ -301,16 +349,21 @@ body {
   border-color: var(--p-low-border);
 }
 
-/* Status */
+/* Status badges */
+.badge--pending {
+  background: var(--s-pending-fill);
+  color: var(--s-pending-ink);
+  border-color: var(--s-pending-border);
+}
 .badge--inprogress {
   background: var(--s-inprogress-fill);
   color: var(--s-inprogress-ink);
-  border-color: var(--accent-muted);
+  border-color: var(--s-inprogress-border);
 }
 .badge--done {
   background: var(--s-done-fill);
   color: var(--s-done-ink);
-  border-color: #bbf7d0;
+  border-color: var(--s-done-border);
 }
 
 /* Separator dot between badges */
@@ -323,14 +376,117 @@ body {
 }
 
 /* =============================================
-   DESCRIPTION
+   STATUS CONTROL — select dropdown
    ============================================= */
+.status-control-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.status-select {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  padding-right: 1.4rem;
+  font-family: var(--font-sans);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b6966' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.4rem center;
+  background-size: 8px;
+  transition:
+    background var(--t-fast),
+    border-color var(--t-fast),
+    color var(--t-fast),
+    box-shadow var(--t-fast);
+}
+
+.status-select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* The hidden read-only badge (still in DOM for testid) — always hidden */
+.status-display {
+  display: none !important;
+}
+
+/* =============================================
+   DESCRIPTION + EXPAND/COLLAPSE
+   ============================================= */
+.description-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.todo-collapsible {
+  overflow: hidden;
+  transition: max-height var(--t-slow) ease, opacity var(--t-slow) ease;
+}
+
+/* Collapsed: trim to ~3 lines */
+.todo-collapsible.is-collapsed {
+  max-height: 4.5em; /* ~3 lines at 1.65 line-height */
+  -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+}
+
+/* Expanded */
+.todo-collapsible.is-expanded {
+  max-height: 600px; /* enough for any description */
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
 .todo-description {
   font-size: 0.875rem;
   line-height: 1.65;
   color: var(--ink-500);
   word-break: break-word;
   transition: color var(--t-mid);
+}
+
+/* Expand toggle button */
+.expand-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent);
+  padding: 0.1rem 0;
+  transition: color var(--t-fast), opacity var(--t-fast);
+  width: fit-content;
+}
+
+.expand-toggle:hover {
+  opacity: 0.75;
+}
+
+.expand-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/* Hidden when description is short */
+.expand-toggle.is-hidden {
+  display: none;
+}
+
+.expand-icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  transition: transform var(--t-fast);
+}
+
+.expand-toggle[aria-expanded="true"] .expand-icon {
+  transform: rotate(180deg);
 }
 
 /* =============================================
@@ -346,6 +502,13 @@ body {
   border-radius: 8px;
   background: var(--ink-50);
   border: 1px solid var(--ink-100);
+  transition: background var(--t-mid), border-color var(--t-mid);
+}
+
+/* Overdue: tint the entire due-section */
+.todo-card.is-overdue:not(.is-done) .due-section {
+  background: var(--p-high-fill);
+  border-color: var(--p-high-border);
 }
 
 .due-date-row {
@@ -366,6 +529,39 @@ body {
   font-weight: 500;
   color: var(--ink-700);
   font-variant-numeric: tabular-nums;
+}
+
+/* Overdue: red due date text */
+.todo-card.is-overdue:not(.is-done) .due-date {
+  color: var(--p-high-ink);
+}
+
+/* ─── Overdue indicator badge ─── */
+.overdue-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.55rem;
+  border-radius: 4px;
+  background: var(--p-high-fill);
+  color: var(--p-high-ink);
+  border: 1px solid var(--p-high-border);
+  animation: pulse-badge 2s ease-in-out infinite;
+}
+
+@keyframes pulse-badge {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.overdue-icon {
+  width: 11px;
+  height: 11px;
+  flex-shrink: 0;
 }
 
 /* Time remaining chip */
@@ -401,7 +597,7 @@ body {
 .time-remaining.done-status {
   background: var(--s-done-fill);
   color: var(--s-done-ink);
-  border-color: #bbf7d0;
+  border-color: var(--s-done-border);
 }
 
 /* =============================================
@@ -441,6 +637,99 @@ body {
 }
 
 /* =============================================
+   EDIT FORM
+   ============================================= */
+.edit-form-container {
+  padding: 1.5rem 1.5rem 0 calc(1.5rem + var(--priority-bar-width));
+  border-top: 1px solid var(--ink-100);
+  background: #fafaf9;
+  animation: slide-in var(--t-slow) ease both;
+}
+
+@keyframes slide-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.edit-form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.form-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ink-700);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.form-input,
+.form-textarea,
+.form-select {
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  color: var(--ink-900);
+  background: var(--bg-card);
+  border: 1.5px solid var(--ink-100);
+  border-radius: var(--radius-input);
+  padding: 0.5rem 0.75rem;
+  width: 100%;
+  transition: border-color var(--t-fast), box-shadow var(--t-fast);
+  outline: none;
+}
+
+.form-input:hover,
+.form-textarea:hover,
+.form-select:hover {
+  border-color: var(--ink-300);
+}
+
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-input);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.55;
+}
+
+.form-select {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b6966' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 10px;
+  padding-right: 2rem;
+}
+
+/* Edit form action buttons */
+.edit-form-actions {
+  display: flex;
+  gap: 0.5rem;
+  padding-bottom: 1.25rem;
+}
+
+/* =============================================
    FOOTER
    ============================================= */
 .card-footer {
@@ -448,7 +737,7 @@ body {
   grid-template-columns: 1fr auto;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.875rem 1.5rem;
+  padding: 0.875rem 1.5rem 0.875rem calc(1.5rem + var(--priority-bar-width));
   border-top: 1px solid var(--ink-100);
   background: var(--bg-page);
 }
@@ -515,12 +804,37 @@ body {
   border-color: var(--p-high-border);
 }
 
+/* Save — green filled */
+.btn--save {
+  background: #16a34a;
+  color: #ffffff;
+  border-color: #16a34a;
+  flex: 1;
+}
+.btn--save:hover {
+  background: #15803d;
+  border-color: #15803d;
+}
+
+/* Cancel — ghost */
+.btn--cancel {
+  background: transparent;
+  color: var(--ink-500);
+  border-color: var(--ink-100);
+}
+.btn--cancel:hover {
+  background: var(--ink-50);
+  border-color: var(--ink-300);
+  color: var(--ink-700);
+}
+
 /* =============================================
    RESPONSIVE
    ============================================= */
+/* Mobile 320px+ */
 @media (max-width: 480px) {
   body {
-    padding: 1rem 0.875rem;
+    padding: 1rem 0.75rem;
     align-items: flex-start;
   }
 
@@ -533,12 +847,16 @@ body {
   }
 
   .card-body {
-    padding: 1.25rem 1.125rem 1rem;
+    padding: 1.25rem 1rem 1rem calc(1rem + var(--priority-bar-width));
   }
 
   .card-footer {
-    padding: 0.75rem 1.125rem;
-    gap: 0.5rem;
+    padding: 0.75rem 1rem 0.75rem calc(1rem + var(--priority-bar-width));
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .btn--edit {
+    grid-column: span 2;
   }
 
   .todo-title {
@@ -551,12 +869,27 @@ body {
     gap: 0.375rem;
   }
 
-  .card-footer {
-    grid-template-columns: 1fr 1fr;
+  /* Edit form: stack form-row on mobile */
+  .form-row {
+    grid-template-columns: 1fr;
   }
 
-  .btn--edit {
-    grid-column: span 2;
+  .edit-form-container {
+    padding: 1.25rem 1rem 0 calc(1rem + var(--priority-bar-width));
+  }
+}
+
+/* Tablet 768px */
+@media (min-width: 768px) {
+  .page-wrapper {
+    max-width: 520px;
+  }
+}
+
+/* Desktop 1024px+ */
+@media (min-width: 1024px) {
+  .page-wrapper {
+    max-width: 560px;
   }
 }
 
@@ -576,4 +909,5 @@ body {
 @media (forced-colors: active) {
   .todo-card { border: 2px solid ButtonText; }
   .btn { forced-color-adjust: none; }
+  .priority-indicator { forced-color-adjust: none; }
 }
